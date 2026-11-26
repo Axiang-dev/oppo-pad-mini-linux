@@ -1,0 +1,68 @@
+Hold a clock-framework reference to the bootloader's active VSYNC clock
+for the OPD2515 splash diagnostic.
+
+diff --git a/drivers/clk/qcom/dispcc-kaanapali.c b/drivers/clk/qcom/dispcc-kaanapali.c
+--- a/drivers/clk/qcom/dispcc-kaanapali.c
++++ b/drivers/clk/qcom/dispcc-kaanapali.c
+@@ -3,6 +3,7 @@
+  * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
+  */
+ 
++#include <linux/clk.h>
+ #include <linux/clk-provider.h>
+ #include <linux/module.h>
+ #include <linux/of.h>
+@@ -1936,21 +1937,52 @@
+ static bool keep_splash_domains;
+ module_param(keep_splash_domains, bool, 0400);
+ 
++static void disp_cc_release_splash_vsync(void *data)
++{
++	clk_disable_unprepare(data);
++}
++
+ static int disp_cc_kaanapali_probe(struct platform_device *pdev)
+ {
++	struct device *dev = &pdev->dev;
++	struct clk_hw *vsync_hw = &disp_cc_mdss_vsync_clk.clkr.hw;
+ 	struct device_node *splash;
++	struct clk *vsync;
++	bool retain_splash = false;
++	int ret;
+ 
+ 	if (keep_splash_domains && of_machine_is_compatible("oppo,opd2515")) {
+ 		splash = of_find_node_by_path("/chosen/framebuffer@fc800000");
+ 		if (splash) {
+ 			disp_cc_mdss_core_gdsc.pd.flags |= GENPD_FLAG_RPM_ALWAYS_ON;
+ 			disp_cc_mdss_core_int2_gdsc.pd.flags |= GENPD_FLAG_RPM_ALWAYS_ON;
++			retain_splash = true;
+ 			of_node_put(splash);
+ 			dev_info(&pdev->dev, "OPD2515 splash: retaining CORE and INT2\n");
+ 		}
+ 	}
+ 
+-	return qcom_cc_probe(pdev, &disp_cc_kaanapali_desc);
++	ret = qcom_cc_probe(pdev, &disp_cc_kaanapali_desc);
++	if (ret || !retain_splash)
++		return ret;
++
++	if (!clk_hw_is_enabled(vsync_hw))
++		return dev_err_probe(dev, -EINVAL, "splash VSYNC is already disabled\n");
++
++	vsync = devm_clk_hw_get_clk(dev, vsync_hw, "splash-vsync");
++	if (IS_ERR(vsync))
++		return PTR_ERR(vsync);
++
++	ret = clk_prepare_enable(vsync);
++	if (ret)
++		return dev_err_probe(dev, ret, "failed to hold splash VSYNC\n");
++
++	ret = devm_add_action_or_reset(dev, disp_cc_release_splash_vsync, vsync);
++	if (ret)
++		return ret;
++
++	dev_info(dev, "OPD2515 splash: holding VSYNC clock\n");
++	return 0;
+ }
+ 
+ static struct platform_driver disp_cc_kaanapali_driver = {

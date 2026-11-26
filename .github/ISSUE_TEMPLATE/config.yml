@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Build and recovery documentation
+    url: https://github.com/Axiang-dev/oppo-pad-mini-linux/blob/main/docs/building.md
+    about: Read the reproducible build path and recovery requirements before filing an issue.
+  - name: Current hardware status
+    url: https://github.com/Axiang-dev/oppo-pad-mini-linux/blob/main/docs/status.md
+    about: Check the evidence-qualified support matrix and known blockers.

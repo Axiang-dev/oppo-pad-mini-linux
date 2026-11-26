@@ -1,0 +1,47 @@
+Prepare the VSYNC clock before reading its gate so the regulator-backed
+display clock provider is runtime active.
+
+diff --git a/drivers/clk/qcom/dispcc-kaanapali.c b/drivers/clk/qcom/dispcc-kaanapali.c
+--- a/drivers/clk/qcom/dispcc-kaanapali.c
++++ b/drivers/clk/qcom/dispcc-kaanapali.c
+@@ -1959,16 +1959,26 @@
+ 	if (ret || !retain_splash)
+ 		return ret;
+-
+-	if (!clk_hw_is_enabled(vsync_hw))
+-		return dev_err_probe(dev, -EINVAL, "splash VSYNC is already disabled\n");
+ 
+ 	vsync = devm_clk_hw_get_clk(dev, vsync_hw, "splash-vsync");
+ 	if (IS_ERR(vsync))
+ 		return PTR_ERR(vsync);
+ 
+-	ret = clk_prepare_enable(vsync);
++	/* Preparing the clock resumes its provider before reading the gate. */
++	ret = clk_prepare(vsync);
+ 	if (ret)
+-		return dev_err_probe(dev, ret, "failed to hold splash VSYNC\n");
++		return dev_err_probe(dev, ret, "failed to prepare splash VSYNC\n");
++
++	ret = clk_is_enabled_regmap(vsync_hw);
++	if (ret <= 0) {
++		ret = dev_err_probe(dev, ret ?: -EINVAL, "splash VSYNC gate not enabled\n");
++		goto unprepare_vsync;
++	}
++
++	ret = clk_enable(vsync);
++	if (ret) {
++		dev_err_probe(dev, ret, "failed to hold splash VSYNC\n");
++		goto unprepare_vsync;
++	}
+ 
+ 	ret = devm_add_action_or_reset(dev, disp_cc_release_splash_vsync, vsync);
+ 	if (ret)
+@@ -1976,4 +1986,8 @@
+ 
+ 	dev_info(dev, "OPD2515 splash: holding VSYNC clock\n");
+ 	return 0;
++
++unprepare_vsync:
++	clk_unprepare(vsync);
++	return ret;
+ }

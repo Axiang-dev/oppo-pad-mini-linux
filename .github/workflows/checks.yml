@@ -1,0 +1,47 @@
+name: Repository checks
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    env:
+      OPD2515_WORKDIR: ${{ runner.temp }}/opd2515-work
+      OPD2515_ARTIFACT_DIR: ${{ runner.temp }}/opd2515-artifacts
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Install host dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y shellcheck
+          ./scripts/setup.sh --install-deps
+
+      - name: Check scripts and Python syntax
+        run: ./tests/check-scripts.sh
+
+      - name: Check Markdown
+        run: python3 tests/check-markdown.py
+
+      - name: Check repository privacy and file policy
+        run: python3 tests/check-repository.py
+
+      - name: Fetch pinned Linux baseline
+        run: ./scripts/fetch-sources.sh
+
+      - name: Verify patch applies to pinned baseline
+        run: ./scripts/apply-patches.sh --check
+
+      - name: Check tracked patch checksums
+        run: ./tests/check-patches.sh

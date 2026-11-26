@@ -1,0 +1,93 @@
+Add an independent GPIO-preservation mask for XN254 passive splash diagnosis.
+
+diff --git a/drivers/gpu/drm/panel/panel-oppo-xn254.c b/drivers/gpu/drm/panel/panel-oppo-xn254.c
+--- a/drivers/gpu/drm/panel/panel-oppo-xn254.c
++++ b/drivers/gpu/drm/panel/panel-oppo-xn254.c
+@@ -92,6 +92,31 @@
+ 			mipi_dsi_msleep(dsi_ctx, wait);
+ 		offset += 7 + payload_length;
+ 	}
++}
++
++#define OPD_XN254_SPLASH_GPIO_RESET BIT(0)
++#define OPD_XN254_SPLASH_GPIO_VDDR_EN BIT(1)
++#define OPD_XN254_SPLASH_GPIO_PANEL_EN BIT(2)
++
++static bool preserve_splash_gpios;
++module_param(preserve_splash_gpios, bool, 0400);
++MODULE_PARM_DESC(preserve_splash_gpios, "Preserve all GPIO direction and levels during passive splash diagnosis");
++
++static unsigned int preserve_splash_gpio_mask;
++module_param(preserve_splash_gpio_mask, uint, 0400);
++MODULE_PARM_DESC(preserve_splash_gpio_mask, "Bitmask of reset, vddr-en and panel-en GPIOs to preserve");
++
++static bool allow_splash_prepare;
++module_param(allow_splash_prepare, bool, 0400);
++MODULE_PARM_DESC(allow_splash_prepare, "Allow panel prepare after requesting preserved GPIOs");
++
++static unsigned int oppo_xn254_preserved_gpios(void)
++{
++	if (preserve_splash_gpios)
++		return OPD_XN254_SPLASH_GPIO_RESET |
++		       OPD_XN254_SPLASH_GPIO_VDDR_EN |
++		       OPD_XN254_SPLASH_GPIO_PANEL_EN;
++	return preserve_splash_gpio_mask & 7;
+ }
+ 
+ static int oppo_xn254_prepare(struct drm_panel *panel)
+@@ -105,6 +130,10 @@
+ 	int power_ret;
+ 	int signal_ret;
+ 	int ret;
++
++	/* Preserve inherited pins for the passive driver-bound diagnostic. */
++	if (oppo_xn254_preserved_gpios() && !allow_splash_prepare)
++		return -EOPNOTSUPP;
+ 
+ 	/* Runtime FDT sequence: VDDIO, VDD, PMIC GPIO4, VCI, TLMM GPIO6. */
+ 	ret = regulator_enable(ctx->supplies[0].consumer);
+@@ -253,6 +282,13 @@
+ {
+ 	struct device *dev = &dsi->dev;
+ 	struct oppo_xn254 *ctx;
++	const unsigned int preserved_gpios = oppo_xn254_preserved_gpios();
++	enum gpiod_flags reset_flags = preserved_gpios & OPD_XN254_SPLASH_GPIO_RESET ?
++		GPIOD_ASIS : GPIOD_OUT_LOW;
++	enum gpiod_flags vddr_flags = preserved_gpios & OPD_XN254_SPLASH_GPIO_VDDR_EN ?
++		GPIOD_ASIS : GPIOD_OUT_LOW;
++	enum gpiod_flags panel_flags = preserved_gpios & OPD_XN254_SPLASH_GPIO_PANEL_EN ?
++		GPIOD_ASIS : GPIOD_OUT_LOW;
+ 	int ret;
+ 
+ 	ctx = devm_drm_panel_alloc(dev, struct oppo_xn254, panel,
+@@ -268,20 +300,27 @@
+ 	if (ret < 0)
+ 		return ret;
+ 
+-	ctx->reset_gpio = devm_gpiod_get(dev, "reset", GPIOD_OUT_LOW);
++	ctx->reset_gpio = devm_gpiod_get(dev, "reset", reset_flags);
+ 	if (IS_ERR(ctx->reset_gpio))
+ 		return dev_err_probe(dev, PTR_ERR(ctx->reset_gpio),
+ 				     "Failed to get reset GPIO\n");
+ 
+-	ctx->vddr_en_gpio = devm_gpiod_get(dev, "vddr-en", GPIOD_OUT_LOW);
++	ctx->vddr_en_gpio = devm_gpiod_get(dev, "vddr-en", vddr_flags);
+ 	if (IS_ERR(ctx->vddr_en_gpio))
+ 		return dev_err_probe(dev, PTR_ERR(ctx->vddr_en_gpio),
+ 				     "Failed to get VDD regulator enable GPIO\n");
+ 
+-	ctx->panel_en_gpio = devm_gpiod_get(dev, "panel-en", GPIOD_OUT_LOW);
++	ctx->panel_en_gpio = devm_gpiod_get(dev, "panel-en", panel_flags);
+ 	if (IS_ERR(ctx->panel_en_gpio))
+ 		return dev_err_probe(dev, PTR_ERR(ctx->panel_en_gpio),
+ 				     "Failed to get panel enable GPIO\n");
++
++	if (preserved_gpios)
++		dev_info(dev, "OPD2515 XN254 GPIO mask=0x%x raw reset=%d vddr-en=%d panel-en=%d\n",
++			 preserved_gpios,
++			 gpiod_get_raw_value_cansleep(ctx->reset_gpio),
++			 gpiod_get_raw_value_cansleep(ctx->vddr_en_gpio),
++			 gpiod_get_raw_value_cansleep(ctx->panel_en_gpio));
+ 
+ 	ctx->dsi = dsi;
+ 	mipi_dsi_set_drvdata(dsi, ctx);

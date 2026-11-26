@@ -1,0 +1,12 @@
+Allow the existing MSM MDSS platform driver to probe when the serial
+test loads msm.ko after the splash frame controls.
+
+diff --git a/arch/arm64/boot/dts/qcom/molokai-oppo-opd2515-diag.dts b/arch/arm64/boot/dts/qcom/molokai-oppo-opd2515-diag.dts
+--- a/arch/arm64/boot/dts/qcom/molokai-oppo-opd2515-diag.dts
++++ b/arch/arm64/boot/dts/qcom/molokai-oppo-opd2515-diag.dts
+@@ -256,4 +256,4 @@
+ &gpu { status = "disabled"; };
+ &gmu { status = "disabled"; };
+-&mdss { status = "disabled"; };
++&mdss { status = "okay"; };
+ &usb_dp_qmpphy { status = "disabled"; };

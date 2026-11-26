@@ -1,0 +1,33 @@
+diff --git a/drivers/clk/qcom/dispcc-kaanapali.c b/drivers/clk/qcom/dispcc-kaanapali.c
+--- a/drivers/clk/qcom/dispcc-kaanapali.c
++++ b/drivers/clk/qcom/dispcc-kaanapali.c
+@@ -6,5 +6,6 @@
+ #include <linux/clk-provider.h>
+ #include <linux/module.h>
++#include <linux/of.h>
+ #include <linux/platform_device.h>
+ #include <linux/regmap.h>
+ 
+@@ -1931,7 +1932,22 @@
+ };
+ MODULE_DEVICE_TABLE(of, disp_cc_kaanapali_match_table);
+ 
++static bool keep_splash_domains;
++module_param(keep_splash_domains, bool, 0400);
++
+ static int disp_cc_kaanapali_probe(struct platform_device *pdev)
+ {
++	struct device_node *splash;
++
++	if (keep_splash_domains && of_machine_is_compatible("oppo,opd2515")) {
++		splash = of_find_node_by_path("/chosen/framebuffer@fc800000");
++		if (splash) {
++			disp_cc_mdss_core_gdsc.pd.flags |= GENPD_FLAG_RPM_ALWAYS_ON;
++			disp_cc_mdss_core_int2_gdsc.pd.flags |= GENPD_FLAG_RPM_ALWAYS_ON;
++			of_node_put(splash);
++			dev_info(&pdev->dev, "OPD2515 splash: retaining CORE and INT2\n");
++		}
++	}
++
+ 	return qcom_cc_probe(pdev, &disp_cc_kaanapali_desc);
+ }

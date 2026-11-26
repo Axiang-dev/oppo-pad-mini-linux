@@ -1,0 +1,84 @@
+name: OPD2515 hardware result
+description: Submit a sanitized, reproducible hardware observation.
+title: "hardware: "
+labels: ["hardware-result"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        A hardware report is evidence, not a support promise. Do not claim a feature works from compile success, module load, DRM enumeration, or a counter alone. Remove serial numbers, USB instance identifiers, MAC addresses, IMEI, account data, vendor firmware, and complete partition images.
+  - type: input
+    id: revision
+    attributes:
+      label: Source revision
+      description: Repository commit and kernel source commit.
+    validations:
+      required: true
+  - type: input
+    id: hashes
+    attributes:
+      label: Build hashes
+      description: Patch, configuration, Image, DTB, modules, and initramfs SHA256 values.
+    validations:
+      required: true
+  - type: input
+    id: firmware
+    attributes:
+      label: Firmware family
+      description: Model and firmware build, without a serial number.
+    validations:
+      required: true
+  - type: textarea
+    id: variable
+    attributes:
+      label: Single changed variable
+      description: State the one behavioral or source variable changed for this test.
+    validations:
+      required: true
+  - type: textarea
+    id: visual
+    attributes:
+      label: Visual result
+      description: Record the view before firmware splash handoff, after takeover, and after recovery.
+    validations:
+      required: true
+  - type: textarea
+    id: display_evidence
+    attributes:
+      label: Display and transport evidence
+      description: Include DPU LM/INTF CRC, DSI/MISR, TE, SMMU, DSI FIFO, ACK, PLL, underrun, vblank, and USB/Fastboot state as applicable.
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Sanitized log excerpt
+      description: Quote only the relevant lines and surrounding context.
+  - type: dropdown
+    id: result
+    attributes:
+      label: Result classification
+      options:
+        - Direct device evidence
+        - Controlled exclusion
+        - Source-analysis conclusion
+        - Unverified hypothesis
+        - Corrected historical conclusion
+    validations:
+      required: true
+  - type: textarea
+    id: recovery
+    attributes:
+      label: Recovery state
+      description: Confirm whether standard Fastboot was reachable, whether the original software booted, and what stopped the session.
+    validations:
+      required: true
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: Publication and safety confirmation
+      options:
+        - label: I removed all device-unique identifiers, credentials, and proprietary binary material.
+          required: true
+        - label: I have not represented this result as support for another model or firmware revision.
+          required: true

@@ -1,0 +1,52 @@
+#!/bin/sh
+# SPDX-License-Identifier: GPL-2.0-only
+# Self-contained OPD2515 diagnostic PID 1. No Android userdata is mounted.
+export PATH=/bin:/sbin
+
+mount -t devtmpfs devtmpfs /dev || exec /bin/sh
+mount -t proc proc /proc
+mount -t sysfs sysfs /sys
+mount -t tmpfs tmpfs /run
+exec </dev/null >/dev/kmsg 2>&1
+printf '%s\n' 'OPD2515 diagnostic initramfs started'
+
+open_shell() {
+    printf 'OPD2515 diagnostic shell: %s\n' "$1"
+    if [ -c /dev/ttyGS0 ]; then
+        exec </dev/ttyGS0 >/dev/ttyGS0 2>&1
+    fi
+    exec /bin/sh -i
+}
+
+mount -t configfs configfs /sys/kernel/config || open_shell configfs_mount_failed
+g=/sys/kernel/config/usb_gadget/opd2515
+mkdir -p "$g" || open_shell gadget_directory_failed
+printf '%s\n' 0x1d6b >"$g/idVendor"
+printf '%s\n' 0x0104 >"$g/idProduct"
+mkdir -p "$g/strings/0x409" || open_shell gadget_strings_failed
+printf '%s\n' opd2515-diag >"$g/strings/0x409/serialnumber"
+printf '%s\n' 'OPD2515 diagnostic' >"$g/strings/0x409/product"
+printf '%s\n' Linux >"$g/strings/0x409/manufacturer"
+mkdir -p "$g/configs/c.1/strings/0x409" "$g/functions/acm.usb0" || \
+    open_shell gadget_functions_failed
+printf '%s\n' 'RAM diagnostic console' >"$g/configs/c.1/strings/0x409/configuration"
+printf '%s\n' 100 >"$g/configs/c.1/MaxPower"
+ln -s "$g/functions/acm.usb0" "$g/configs/c.1/acm.usb0" || \
+    open_shell gadget_link_failed
+
+udc=
+for _ in $(seq 1 25); do
+    udc=$(ls /sys/class/udc | head -n 1)
+    [ -n "$udc" ] && break
+    sleep 1
+done
+[ -n "$udc" ] || open_shell udc_unavailable
+printf '%s\n' "$udc" >"$g/UDC" || open_shell udc_bind_failed
+printf '%s\n' 'OPD2515 USB ACM ready'
+
+mkdir -p /modules
+printf '%s\n' 'OPD2515 loading display diagnostics'
+sh /modules/load-display.sh
+printf 'OPD2515 display load returned %s\n' "$?"
+
+open_shell ready

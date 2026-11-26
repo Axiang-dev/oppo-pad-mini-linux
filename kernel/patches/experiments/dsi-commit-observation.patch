@@ -1,0 +1,53 @@
+--- a/drivers/gpu/drm/msm/dsi/dsi_host.c
++++ b/drivers/gpu/drm/msm/dsi/dsi_host.c
+@@ -1168,9 +1168,10 @@
+ static void dsi_op_mode_config(struct msm_dsi_host *msm_host,
+ 					bool video_mode, bool enable)
+ {
+-	u32 dsi_ctrl;
+-
+-	dsi_ctrl = dsi_read(msm_host, REG_DSI_CTRL);
++	u32 dsi_ctrl, previous;
++
++	previous = dsi_read(msm_host, REG_DSI_CTRL);
++	dsi_ctrl = previous;
+ 
+ 	if (!enable) {
+ 		dsi_ctrl &= ~(DSI_CTRL_ENABLE | DSI_CTRL_VID_MODE_EN |
+@@ -1188,6 +1189,14 @@
+ 	}
+ 
+ 	dsi_write(msm_host, REG_DSI_CTRL, dsi_ctrl);
++	if (enable)
++		dev_info_once(&msm_host->pdev->dev,
++			      "OPD2515 DSI enable: video=%d CTRL %#x -> %#x\n",
++			      video_mode, previous, dsi_ctrl);
++	else
++		dev_info_once(&msm_host->pdev->dev,
++			      "OPD2515 DSI disable: video=%d CTRL %#x -> %#x\n",
++			      video_mode, previous, dsi_ctrl);
+ }
+ 
+ static void dsi_set_tx_power_mode(int mode, struct msm_dsi_host *msm_host)
+--- a/drivers/gpu/drm/msm/msm_atomic.c
++++ b/drivers/gpu/drm/msm/msm_atomic.c
+@@ -221,6 +221,9 @@
+ 	bool async = can_do_async(state, &async_crtc);
+ 
+ 	trace_msm_atomic_commit_tail_start(async, crtc_mask);
++	if (crtc_mask)
++		dev_info_once(dev->dev, "OPD2515 first atomic commit: async=%d crtc=%#x\n",
++			      async, crtc_mask);
+ 
+ 	kms->funcs->enable_commit(kms);
+ 
+@@ -295,6 +298,9 @@
+ 	 * them into the current flush.
+ 	 */
+ 	kms->pending_crtc_mask &= ~crtc_mask;
++	if (crtc_mask)
++		dev_info_once(dev->dev, "OPD2515 first synchronous flush: crtc=%#x\n",
++			      crtc_mask);
+ 
+ 	vblank_get(kms, crtc_mask);
+ 

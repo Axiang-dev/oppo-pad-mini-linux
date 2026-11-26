@@ -1,0 +1,35 @@
+name: Feature or subsystem request
+description: Propose a scoped next step for hardware, userspace, or project tooling.
+title: "proposal: "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: decision
+    attributes:
+      label: Decision this should change
+      description: State the engineering decision or user-visible capability this work targets.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Current evidence
+      description: Separate device facts, controlled exclusions, source analysis, and unverified assumptions.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed experiment or implementation
+      description: Explain the single variable, expected result, negative control, and rollback path.
+    validations:
+      required: true
+  - type: checkboxes
+    id: scope
+    attributes:
+      label: Scope confirmation
+      options:
+        - label: This proposal does not require redistributing proprietary firmware or device backups.
+          required: true
+        - label: Any partition write will require fresh device-owner authorization.
+          required: true

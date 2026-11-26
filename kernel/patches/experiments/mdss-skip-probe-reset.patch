@@ -1,0 +1,15 @@
+Omit the optional MDSS core reset for the passive splash handoff control.
+Leave the reset provider and all other consumers unchanged.
+
+diff --git a/arch/arm64/boot/dts/qcom/molokai-oppo-opd2515-diag.dts b/arch/arm64/boot/dts/qcom/molokai-oppo-opd2515-diag.dts
+--- a/arch/arm64/boot/dts/qcom/molokai-oppo-opd2515-diag.dts
++++ b/arch/arm64/boot/dts/qcom/molokai-oppo-opd2515-diag.dts
+@@ -256,4 +256,7 @@
+ &gpu { status = "disabled"; };
+ &gmu { status = "disabled"; };
+-&mdss { status = "okay"; };
++&mdss {
++    /delete-property/ resets;
++    status = "okay";
++};
+ &usb_dp_qmpphy { status = "disabled"; };

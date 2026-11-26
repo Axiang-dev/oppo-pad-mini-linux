@@ -1,0 +1,16 @@
+Keep the firmware VSYNC RCG configuration during this diagnostic, using
+the same registration-time clock ops as the Freedom MDP preservation.
+
+diff --git a/drivers/clk/qcom/dispcc-kaanapali.c b/drivers/clk/qcom/dispcc-kaanapali.c
+--- a/drivers/clk/qcom/dispcc-kaanapali.c
++++ b/drivers/clk/qcom/dispcc-kaanapali.c
+@@ -746,8 +746,8 @@ static struct clk_rcg2 disp_cc_mdss_vsync_clk_src = {
+ 	.clkr.hw.init = &(const struct clk_init_data) {
+ 		.name = "disp_cc_mdss_vsync_clk_src",
+ 		.parent_data = disp_cc_parent_data_0,
+ 		.num_parents = ARRAY_SIZE(disp_cc_parent_data_0),
+ 		.flags = CLK_SET_RATE_PARENT,
+-		.ops = &clk_rcg2_shared_ops,
++		.ops = &clk_rcg2_shared_no_init_park_ops,
+ 	},
+ };

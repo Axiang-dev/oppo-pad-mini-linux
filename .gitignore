@@ -1,0 +1,54 @@
+# Local source and build trees
+/work/
+/out/
+/build/
+/.cache/
+/artifacts/
+/downloads/
+
+# Build products and device images
+*.img
+*.bin
+*.dtb
+*.dtbo
+*.ko
+*.o
+*.a
+*.cpio
+*.cpio.gz
+*.initramfs
+*.ext4
+*.iso
+*.tar
+*.tar.gz
+*.tar.xz
+*.tar.zst
+*.zip
+*.xz
+*.zst
+
+# Private device data and logs
+/logs/
+*.log
+*.dmesg
+*.serial
+*.pcap
+*.pcapng
+*.private
+*.secret
+*.token
+*.pem
+*.key
+*.p12
+*.p7b
+
+# Development noise
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.shellcheckrc.local
+node_modules/
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

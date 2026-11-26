@@ -1,0 +1,12 @@
+diff --git a/drivers/gpu/drm/panel/panel-oppo-xn254.c b/drivers/gpu/drm/panel/panel-oppo-xn254.c
+--- a/drivers/gpu/drm/panel/panel-oppo-xn254.c
++++ b/drivers/gpu/drm/panel/panel-oppo-xn254.c
+@@ -136,6 +136,8 @@ static int oppo_xn254_prepare(struct drm_panel *panel)
+ 		goto err;
+ 
+ 	drm_dsc_pps_payload_pack(&pps, &ctx->dsc);
++	/* Test the sole payload byte that differs from the stock 120 Hz PPS. */
++	pps.native_422_420 = 0x74;
+ 	mipi_dsi_picture_parameter_set_multi(&dsi_ctx, &pps);
+ 	oppo_xn254_set_page(&dsi_ctx, 0x00);
+ 	if (dsi_ctx.accum_err)

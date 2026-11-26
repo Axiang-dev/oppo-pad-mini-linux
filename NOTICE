@@ -1,0 +1,20 @@
+OPD2515 Linux Port is an unofficial community project. It is not affiliated
+with, endorsed by, or sponsored by OPPO, Qualcomm, Armada OS, ROCKNIX, or any
+other upstream project named in this repository.
+
+The Linux kernel patches modify code from the Linux kernel. Modified code
+retains its upstream copyright notices and is distributed under compatible
+licenses. Linux kernel code and the OPD2515 diagnostic instrumentation are
+licensed under GPL-2.0-only unless a source file states another license.
+Device-tree source and bindings retain the BSD-3-Clause license where their
+SPDX identifiers state BSD-3-Clause.
+
+Upstream project names, source locations, branches, commits, and licenses are
+documented in docs/sources.md. The repository does not redistribute OPPO
+firmware, Android boot images, vendor kernel modules, partition backups, or
+other material whose redistribution rights have not been established.
+
+The panel initialization data was extracted from a device-local runtime
+device tree for interoperability research. The generated data is included as
+source-form research material and does not include a complete vendor firmware
+image.

@@ -1,0 +1,26 @@
+--- a/drivers/gpu/drm/msm/dsi/dsi_host.c
++++ b/drivers/gpu/drm/msm/dsi/dsi_host.c
+@@ -1608,6 +1608,7 @@
+ 	status = dsi_read(msm_host, REG_DSI_ACK_ERR_STATUS);
+ 
+ 	if (status) {
++		dev_warn_ratelimited(&msm_host->pdev->dev, "DSI ACK_ERR_STATUS=%#010x\n", status);
+ 		dsi_write(msm_host, REG_DSI_ACK_ERR_STATUS, status);
+ 		/* Writing of an extra 0 needed to clear error bits */
+ 		dsi_write(msm_host, REG_DSI_ACK_ERR_STATUS, 0);
+@@ -1622,6 +1623,7 @@
+ 	status = dsi_read(msm_host, REG_DSI_TIMEOUT_STATUS);
+ 
+ 	if (status) {
++		dev_warn_ratelimited(&msm_host->pdev->dev, "DSI TIMEOUT_STATUS=%#010x\n", status);
+ 		dsi_write(msm_host, REG_DSI_TIMEOUT_STATUS, status);
+ 		msm_host->err_work_state |= DSI_ERR_STATE_TIMEOUT;
+ 	}
+@@ -1651,6 +1653,7 @@
+ 
+ 	/* fifo underflow, overflow */
+ 	if (status) {
++		dev_warn_ratelimited(&msm_host->pdev->dev, "DSI FIFO_STATUS=%#010x\n", status);
+ 		dsi_write(msm_host, REG_DSI_FIFO_STATUS, status);
+ 		msm_host->err_work_state |= DSI_ERR_STATE_FIFO;
+ 		if (status & DSI_FIFO_STATUS_CMD_MDP_FIFO_UNDERFLOW)

@@ -1,0 +1,17 @@
+1f1db01896b5d76c1d16f7cd6731be06608738cae6a7a2691f92e88b3ad3c0fe  ./0001-arm64-qcom-add-opd2515-diagnostic-baseline.patch
+d2ebaf0533577720f64cb5a73fc99abbee8c832182177dec6c8b309ecc138170  ./exp053/0001-drm-msm-preserve-splash-clocks.patch
+79da28f78555da192232a198d3ae41c4e2851299e3d238b5fddf75d9d5b35e8f  ./exp053/0002-drm-msm-enable-mdss-takeover.patch
+1da28d2b2ae8743c84e7364b165e51064e7c5623002b6140157c0d1e58d89010  ./experiments/dispcc-preserve-mdp-clock.patch
+0d98d49e5812e5abbc68b340ab66c232b3f0945a553fb6a4f7572141a61c7ff2  ./experiments/dispcc-preserve-vsync-clock.patch
+3f68649cda8480c9bad02dc81510832019b3f4f08922ba89ac4369be74f8d0e2  ./experiments/dispcc-regmap-log.patch
+9aa10279de156936b2031e6a6920d752259ad78ba11290e24098525601beceec  ./experiments/dispcc-splash-hold-gdsc.patch
+f1eb1a99d2e95510e8c4aea17224632b3554adf9ecb13b06421362dd46f05c8d  ./experiments/dispcc-splash-hold-vsync.patch
+c3db617c39de5db91ce2cd69ad19b9d2d6707716a480c943cf01bceb23eaa06e  ./experiments/dispcc-splash-vsync-prepare-check.patch
+528b0470c69d59e358d602014c16f15e891acff56a5ba70291f4f9edb4d69670  ./experiments/dsi-commit-observation.patch
+06008681193e32f6abe01ae71043529fbc9f59371e59a2cddb009108ad995a93  ./experiments/dsi-transport-evidence.patch
+e1ec90c7fbcb0a011fbd824b3afcd95db74191e1182038fb34e43559b5f32217  ./experiments/mdss-skip-probe-reset.patch
+bab354cb9375485c34251a70326ad7f1d1479abe3b784acb2a0c2bdf515171d7  ./experiments/opd2515-dsi-cmd-misr.patch
+d096bfe95125f5cb82af837feb3a87898454674ae34cc8307f91109a6c952cd4  ./experiments/opd2515-dsi-packet-width-rejected.patch
+ed2513d2149c78e4bf9d9ccb2ff71672afa111a7d42c70af5c6c0a48b5208b9a  ./experiments/xn254-preserve-probe-gpios.patch
+7ba76b642b368cfb2a510c48a17b5e7bb6c1a009db87abebf9d3015bcedebd51  ./experiments/xn254-splash-gpio-mask.patch
+772ed8f4a1973621abb9f03403923db0b0fb9eb6e11b9b06047389f4f4a2b39b  ./experiments/xn254-stock-pps88.patch
