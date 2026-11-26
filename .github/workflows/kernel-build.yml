@@ -26,8 +26,8 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 150
     env:
-      OPD2515_WORKDIR: ${{ runner.temp }}/opd2515-work
-      OPD2515_ARTIFACT_DIR: ${{ runner.temp }}/opd2515-artifacts
+      OPD2515_WORKDIR: /tmp/opd2515-work
+      OPD2515_ARTIFACT_DIR: /tmp/opd2515-artifacts
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
